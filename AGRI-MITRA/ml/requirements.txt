@@ -1,0 +1,10 @@
+flask
+gunicorn
+scikit-learn
+pillow
+flask-cors
+torch
+torchvision
+scikit-learn
+pandas
+numpy

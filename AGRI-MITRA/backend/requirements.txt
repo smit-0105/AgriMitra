@@ -1,0 +1,9 @@
+flask
+flask-cors
+gunicorn
+torch
+torchvision
+scikit-learn
+numpy
+pillow
+joblib
