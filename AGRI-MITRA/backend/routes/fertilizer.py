@@ -19,15 +19,28 @@ def predict_fertilizer():
 
     try:
         data = request.json
-        
-        print(f"Received fertilizer data: {data}")
 
-        # Extract required inputs
+        print("--- Fertilizer API Debug ---")
+        for key in ["cropType", "temperature", "humidity", "ph", "rainfall"]:
+            value = data.get(key)
+            print(f"{key}: {value} (type: {type(value)})")
+        print("---------------------------")
+
+        # Validate required fields
+        required_fields = ["cropType", "temperature", "humidity", "ph", "rainfall"]
+        missing = [f for f in required_fields if f not in data or data[f] in [None, "", []]]
+        if missing:
+            return jsonify({"error": f"Missing fields: {', '.join(missing)}"}), 400
+
         crop = data.get("cropType")
-        temperature = float(data.get("temperature"))
-        humidity = float(data.get("humidity"))
-        ph = float(data.get("ph"))
-        rainfall = float(data.get("rainfall"))
+        # Validate numeric fields
+        try:
+            temperature = float(data.get("temperature"))
+            humidity = float(data.get("humidity"))
+            ph = float(data.get("ph"))
+            rainfall = float(data.get("rainfall"))
+        except (TypeError, ValueError):
+            return jsonify({"error": "Please fill all fields with valid numbers (temperature, humidity, ph, rainfall)."}), 400
 
         # Prepare DataFrame as expected by the ML model
         input_data = {
@@ -37,16 +50,12 @@ def predict_fertilizer():
             "pH_Value": [ph],
             "Rainfall": [rainfall]
         }
-
         print(f"Creating DataFrame: {input_data}")
-
         input_df = pd.DataFrame(input_data)
 
         # Run prediction
         prediction = model.predict(input_df)
-
         n_val, p_val, k_val = prediction[0]
-
         return jsonify({
             'N_recommendation_kg_ha': round(n_val, 2),
             'P_recommendation_kg_ha': round(p_val, 2),
